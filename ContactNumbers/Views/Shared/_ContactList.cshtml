@@ -1,0 +1,103 @@
+﻿@model IEnumerable<ContactNumbers.Models.Contacts>
+
+@{
+    ViewData["Title"] = "Employees";
+    string sssss = ViewBag.RestoID;
+    Pager pager = new Pager();
+    int pagerNo = 0;
+    string Filter = "";
+    if (ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pagerNo = pager.CurrentPage;
+    }
+}
+
+
+
+
+<div class="card-body" style="overflow:auto">
+    <div style="float:left">
+        <div style="float:left">
+            
+            <input id="txtSearch" type="text" placeholder="Search Word !!" class="form-control float-left" style="width:70%" /><button id="btnSearch" class="btn btn-secondary" onclick="InitalizeProducts(1)">Search</button>
+        </div>
+        
+    </div>
+    <nav aria-label="Page navigation example" style="float:right">
+        <ul class="pagination">
+
+            @for (var pge = pager.StartPage; pge <= pager.EndPage; pge++)
+            {
+                <li class="page-item PagTab @(pge == pager.CurrentPage ? "active" : "")" style="cursor: pointer; background-color: #ffad19">
+                    <a class="page-link" onclick="InitalizeProducts(@pge)">@pge</a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+
+    <table id="example1" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Phone)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Address)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Notes)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Phone)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Address)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Notes)
+                </td>
+                <td>
+                    <a asp-action="Mod" id="btnEditMod" asp-route-id="@item.Id" data-toggle="modal" data-target="#exampleModal" onclick="GetContactsNumbers(@item.Id)">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a href="#" onclick="ShowDeleteModal(@item.Id)">Delete</a> |
+
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+
+
+        $('.empImage').hover(function () {
+            $(this).addClass('transition');
+
+        }, function () {
+            $(this).removeClass('transition');
+        });
+
+       
+
+    </script>
+
+
+}

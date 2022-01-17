@@ -1,0 +1,226 @@
+﻿@model IEnumerable<ContactNumbers.Models.Contacts>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Contacts</h1>
+
+<p>
+    <a class="btn btn-outline-primary" asp-action="Create">Create New</a>
+</p>
+
+<div id="Seccontent" style="overflow:auto"></div>
+
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Contact Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group" style="display:none">
+                        <label for="recipient-name" class="col-form-label">Id:</label>
+                        <input type="text" class="form-control" id="txtid">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Name:</label>
+                        <input type="text" class="form-control" id="txtname">
+                    </div>
+                     <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Phone:</label>
+                        <input type="text" class="form-control" id="txtphone" >
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Address:</label>
+                        <input type="text" class="form-control" id="txtaddress">
+                    </div>
+                   
+
+
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">Note:</label>
+                        <textarea class="form-control" id="txtnote"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="UpdateContact()">Update Contact</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Confirmation To Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are You Shure You Want To Delete The Contact ?
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="RowID" />
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="btnDelete" class="btn btn-primary" onclick="DeleteContact()">Delete Contact</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script type="text/javascript">
+        InitalizeProducts(1);
+        function InitalizeProducts(pg) {
+
+           var searchKey = $('#txtSearch').val();
+           // var searchKey = 'Hany';
+
+            $.ajax({
+                type: "Get",
+                url: "/Contacts/IndexPaging",
+                data: {
+                    searchKey: searchKey,
+                    P_size: 4,
+                    pg: pg
+
+                },
+                success: function (response) {
+                    $("#Seccontent").html(response);
+                    $("#Seccontent").show();
+                },
+                error: function (data) {
+                    alert("Fail");
+                }
+            });
+        };
+
+
+        function GetContactsNumbers(id) {
+            //$('#recipient-name').val(id);
+            $.ajax({
+                type: "GET",
+                url: "/Contacts/DetailsForModal",
+                data: {
+                    id: id
+                },
+                success: function (response) {
+                    $('#txtid').val(response.id);
+                    $('#txtname').val(response.name);
+                    $('#txtaddress').val(response.address);
+                    $('#txtphone').val(response.phone);
+                    $('#txtnote').val(response.notes);
+
+                },
+                error: function (response) {
+
+                    alert(response);
+                }
+            });
+        };
+
+        function UpdateContact() {
+            var Id = $("#txtid").val();
+            var Name = $("#txtname").val();
+            var Phone = $("#txtphone").val();
+            var Address = $("#txtaddress").val();
+            var Notes = $("#txtnote").val();
+            if (ValidUserInput()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Contacts/EditModal",
+                    data: {
+                        Id: Id,
+                        Name: Name,
+                        Phone: Phone,
+                        Address: Address,
+                        Notes: Notes,
+                    },
+                    success: function (response) {
+                        InitalizeProducts(1);
+                        $("#exampleModal").modal('hide');
+                        alert(response);
+                    },
+                    error: function (response) {
+
+                        alert(response);
+                    }
+                });
+            }
+            
+        };
+
+        function DeleteContact() {
+            var id = $('#RowID').val();
+            $.ajax({
+                type: "POST",
+                url: "/Contacts/DeleteContact",
+                data: {
+                    id: id
+                },
+                success: function (response) {
+                    InitalizeProducts(1);
+                    $("#exampleModalCenter").modal('hide');
+                    alert(response);
+                },
+                error: function (response) {
+
+                    alert(response);
+                }
+            });
+        };
+
+
+        function ShowDeleteModal(id) {
+            var id =  $('#RowID').val(id);
+            $("#exampleModalCenter").modal();
+        };
+
+        function ValidUserInput() {
+            var phone = $("#txtphone").val();
+
+            if ($("#txtname").val() == "") {
+                alert("Enter The Name");
+                return false;
+            } else if ($("#txtphone").val() == "") {
+                alert("Enter The Phone");
+                return false;
+            } else if ($.isNumeric(phone) && phone.length > 8 && phone.length <= 11) {
+                if (phone.substring(0, 1) != '0') {
+                    alert("The First Number Must be Zero")
+                    return false;
+                } else if (phone.substring(1, 2) != '1') {
+                    alert("The Second Number Must be One")
+                    return false;
+                }
+            }
+            
+            return true;
+            
+            
+        }
+
+
+        //$('#btnSearch').click(function () {
+        //    InitalizeProducts(1);
+        //});
+        
+        
+       
+    </script>
+}
